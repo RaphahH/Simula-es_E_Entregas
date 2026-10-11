@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evolução dos chamados</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#071a2b;          /* fundo principal (azul-marinho) */
+    --bg2:#0a2236;         /* fundo secundário */
+    --card:#0b2a3f;        /* painéis */
+    --card2:#0e3350;       /* painéis em destaque / hover */
+    --ink:#d8f3ff;         /* texto principal */
+    --muted:#7ea9c0;       /* texto secundário */
+    --line:#14506b;        /* bordas */
+    --cyan:#19b5f0;        /* ciano principal */
+    --cyan-lt:#5fd6ff;     /* ciano claro */
+    --azure:#1a8cf0;       /* azul elétrico */
+    --deep:#1a4a7a;        /* azul profundo */
+    --teal:#1e5c64;        /* verde-azulado escuro */
+    --ok:#2fd8e8;
+    --bad:#ff7a90;
+    --glow:0 0 14px rgba(25,181,240,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);
+    font-family:"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(26,140,240,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(30,92,100,.30), transparent 60%),
+      linear-gradient(rgba(25,181,240,.045) 1px, transparent 1px) 0 0/34px 34px,
+      linear-gradient(90deg, rgba(25,181,240,.045) 1px, transparent 1px) 0 0/34px 34px,
+      var(--bg);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+  .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-weight:600;text-shadow:var(--glow)}
+  h1{margin:4px 0 6px;font-size:30px;letter-spacing:.02em;color:#eaf9ff;text-shadow:0 0 18px rgba(25,181,240,.35)}
+  .sub{color:var(--muted);margin:0 0 10px}
+  .meta{font-size:13px;color:var(--muted);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+
+  .tabs{display:flex;gap:8px;margin:18px 0 22px;flex-wrap:wrap}
+  .tab{
+    border:1px solid var(--line);background:rgba(11,42,63,.7);color:var(--muted);
+    padding:9px 18px;border-radius:6px;cursor:pointer;font-size:14px;letter-spacing:.03em;
+    transition:all .15s ease;
+  }
+  .tab:hover{border-color:var(--cyan);color:var(--ink)}
+  .tab.active{background:var(--cyan);border-color:var(--cyan-lt);color:#04202f;font-weight:700;box-shadow:var(--glow)}
+
+  .panel{display:none}.panel.active{display:block}
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:18px}
+  .two{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));margin-bottom:18px}
+
+  .card{
+    position:relative;background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+    box-shadow:0 6px 24px rgba(0,0,0,.28), inset 0 0 0 1px rgba(25,181,240,.04);
+  }
+  /* cantos em estilo HUD */
+  .card::before,.card::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none}
+  .card::before{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);border-top-left-radius:10px}
+  .card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);border-bottom-right-radius:10px}
+
+  .card h3{margin:0 0 4px;font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .kpi{font-size:36px;font-weight:700;margin:6px 0 2px;color:var(--cyan-lt);text-shadow:0 0 16px rgba(25,181,240,.35)}
+  .note{font-size:12.5px;color:var(--muted)}
+  .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .head h2{margin:0;font-size:18px;color:#eaf9ff}
+  .chip{
+    font-size:12px;background:rgba(25,181,240,.12);color:var(--cyan-lt);
+    border:1px solid rgba(25,181,240,.45);padding:3px 11px;border-radius:4px;letter-spacing:.03em;
+  }
+  .chartbox{position:relative;height:320px;margin-top:12px}
+
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  th,td{padding:9px 10px;border-bottom:1px solid rgba(20,80,107,.6);text-align:left}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan);background:rgba(25,181,240,.06);position:sticky;top:0}
+  tbody tr:hover{background:rgba(25,181,240,.07)}
+
+  .badge{padding:2px 10px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid transparent}
+  .badge.ok{background:rgba(47,216,232,.12);color:var(--ok);border-color:rgba(47,216,232,.45)}
+  .badge.bad{background:rgba(255,122,144,.12);color:var(--bad);border-color:rgba(255,122,144,.45)}
+
+  .scroll{max-height:420px;overflow:auto}
+  .scroll::-webkit-scrollbar{width:8px;height:8px}
+  .scroll::-webkit-scrollbar-track{background:var(--bg2)}
+  .scroll::-webkit-scrollbar-thumb{background:var(--deep);border-radius:6px}
+  .scroll::-webkit-scrollbar-thumb:hover{background:var(--azure)}
+
+  .legend{font-size:12.5px;color:var(--muted);margin-top:10px}
+  strong{color:var(--cyan-lt)}
+  footer{margin-top:28px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+  /* Selos de status (pílulas) */
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:5px 15px;border-radius:999px;border:2px solid currentColor;
+    background:rgba(7,20,34,.55);font-weight:700;font-size:13.5px;
+    white-space:nowrap;line-height:1.2;
+  }
+  .pill .ico{font-size:15px;line-height:1}
+  .pill.red{color:#f0654a}
+  .pill.green{color:#4fd1a1}
+  .pill.gold{color:#f5b72e}
+  .pill.blue{color:#14b8f0}
+  .pill.pink{color:#e0306f}
+  .pill.none{color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+  .legend .pill{padding:3px 12px;font-size:12px}  
+  
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Service desk analytics</div>
+  <h1>Evolução dos chamados</h1>
+  <p class="sub">Acompanhamento de escalonamentos simulados ao N3 e volume de entregas.</p>
+  <div class="meta">Base atualizada · out/2026 &nbsp;|&nbsp; Fonte: planilha de acompanhamento &nbsp;|&nbsp; Gerado em 10/10/2026 19:02</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="geral">Visão geral</button>
+    <button class="tab" data-tab="n3">Escalonados ao N3</button>
+    <button class="tab" data-tab="entregas">Chamados entregues</button>
+  </div>
+
+  <!-- VISÃO GERAL -->
+  <section class="panel active" id="geral">
+    <div class="grid kpis">
+      <div class="card"><h3>Simulados escalonados ao N3</h3><div class="kpi">31</div><div class="note">31 registros marcados como SIM</div></div>
+      <div class="card"><h3>Chamados entregues</h3><div class="kpi">134</div><div class="note">Total registrado em 20 dias</div></div>
+      <div class="card"><h3>Meta acumulada</h3><div class="kpi">140</div><div class="note">Meta diária de 7 chamados em 20 dias</div></div>
+      <div class="card"><h3>Atingimento acumulado</h3><div class="kpi">95.7%</div><div class="note">Entregas totais ÷ meta total</div></div>
+      <div class="card"><h3>Média aproximada de defeitos escalonados por semana</h3><div class="kpi">10</div><div class="note">Referência definida na planilha</div></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <div class="head"><div><h2>Escalonamentos simulados ao N3</h2>
+          <div class="note">Chamados simulados por período semanal · acumulado no período</div></div>
+          <span class="chip">21 ago – 08 out</span></div>
+        <div class="chartbox"><canvas id="c_n3_geral"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="head"><div><h2>Entregas versus meta</h2>
+          <div class="note">Quantidade diária entregue e meta de referência</div></div>
+          <span class="chip">11 set – 08 out</span></div>
+        <div class="chartbox"><canvas id="c_ent_geral"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <div class="head"><h2>Resumo do período</h2><span class="chip">base da planilha</span></div>
+        <div class="note" style="margin-bottom:10px">Leitura rápida dos dois conjuntos de dados</div>
+        <p><strong>N3:</strong> foram registrados 31 chamados simulados em 7 intervalos semanais. O maior volume foi de 7 chamados; o período mais recente registrou 5.</p><p><strong>Entregas:</strong> foram contabilizados 134 chamados contra meta acumulada de 140, com saldo de -6. Em <strong>14 dos 20 dias</strong> a meta diária foi atingida ou superada.</p>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card"><h3>Média por dia de entrega</h3><div class="kpi">6.7</div></div>
+        <div class="card"><h3>Maior entrega diária</h3><div class="kpi">12</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- N3 -->
+  <section class="panel" id="n3">
+    <div class="card" style="margin-bottom:18px">
+      <div class="head"><div><h2>Evolução semanal dos escalonamentos simulados ao N3</h2>
+        <div class="note">Quantidade de registros na janela informada; linha representa o total acumulado até cada semana.</div></div>
+        <span class="chip">31 chamados · 7 períodos</span></div>
+      <div class="chartbox"><canvas id="c_n3_det"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h2 style="margin:0;font-size:18px;color:#eaf9ff">Status de Simulações por Semana</h2>
+      <div class="note">Participação dos registros “SIM” em relação à média de referência de 10 por semana.</div>
+      <h3 style="margin-top:14px">Score semanal</h3>
+      <table>
+        <thead><tr><th>Semana</th><th>Qtd. simulados</th><th>Referência semanal</th><th>Atingimento</th><th>Status</th></tr></thead>
+        <tbody>
+<tr><td>02/10/26 a 08/10/26</td><td>5</td><td>10</td><td>50.0%</td><td><span class="pill gold" title="40,01–50%"><span class="ico">🌟</span>muito bom</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>7</td><td>10</td><td>70.0%</td><td><span class="pill pink" title="60,01–100%"><span class="ico">🚀</span>Espetacular</span></td></tr>
+<tr><td>18/09/26 a 24/09/26</td><td>4</td><td>10</td><td>40.0%</td><td><span class="pill green" title="30,01–40%"><span class="ico">🟢</span>sinal bom</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>6</td><td>10</td><td>60.0%</td><td><span class="pill blue" title="50,01–60%"><span class="ico">⭐</span>Excelente</span></td></tr>
+<tr><td>04/09/26 a 10/09/26</td><td>2</td><td>10</td><td>20.0%</td><td><span class="pill red" title="10–30%"><span class="ico">🔴</span>sinal vermelho</span></td></tr>
+<tr><td>28/08/26 a 03/09/26</td><td>3</td><td>10</td><td>30.0%</td><td><span class="pill red" title="10–30%"><span class="ico">🔴</span>sinal vermelho</span></td></tr>
+<tr><td>21/08/26 a 27/08/26</td><td>4</td><td>10</td><td>40.0%</td><td><span class="pill green" title="30,01–40%"><span class="ico">🟢</span>sinal bom</span></td></tr>
+        </tbody>
+      </table>
+            <div class="legend">
+        <span>Faixas:</span>
+        <span class="pill red"><span class="ico">🔴</span>sinal vermelho · 10–30%</span>
+        <span class="pill green"><span class="ico">🟢</span>sinal bom · 30,01–40%</span>
+        <span class="pill gold"><span class="ico">🌟</span>muito bom · 40,01–50%</span>
+        <span class="pill blue"><span class="ico">⭐</span>Excelente · 50,01–60%</span>
+        <span class="pill pink"><span class="ico">🚀</span>Espetacular · 60,01–100%</span>
+        <span>Abaixo de 10% ou acima de 100%: sem faixa definida.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><div><h2>Registros simulados</h2>
+        <div class="note">Detalhamento dos chamados incluídos na aba de escalonamento.</div></div>
+        <span class="chip">31 registros</span></div>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Período</th><th>Chamado</th><th>Status</th></tr></thead>
+        <tbody>
+<tr><td>21/08/26 a 27/08/26</td><td>Defeito Cliente 890342 / 1841068</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>21/08/26 a 27/08/26</td><td>Defeito Cliente 890243 / 1839479</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>21/08/26 a 27/08/26</td><td>Defeito Cliente 890333 / 1834533</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>21/08/26 a 27/08/26</td><td>Defeito Cliente 890410 / 1830588</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>28/08/26 a 03/09/26</td><td>Defeito Cliente 890809 / 1843141</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>28/08/26 a 03/09/26</td><td>Defeito Cliente 891031 / 1846225</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>28/08/26 a 03/09/26</td><td>Defeito Cliente 890779 / 1846073</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>04/09/26 a 10/09/26</td><td>Defeito Cliente 891641 / 1843256</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>04/09/26 a 10/09/26</td><td>Defeito Cliente 891595 / 1832097</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 891662 / 1850614</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 891855 / 1828194</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 891939 / 1850404</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 892228 / 1853417</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 892289 / 1852353</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>11/09/26 a 17/09/26</td><td>Defeito Cliente 892299 / 1853658</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>18/09/26 a 24/09/26</td><td>Defeito Cliente 892948 / 1857114</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>18/09/26 a 24/09/26</td><td>Defeito Cliente 892977 / 1857055</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>18/09/26 a 24/09/26</td><td>Defeito Cliente 893067 / 1856546</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>18/09/26 a 24/09/26</td><td>Defeito Cliente 893194 / 1846232</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893298 / 1856867</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893419 / 1860277</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893460 / 1860313</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893543 / 1861339</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893467 / 1859968</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito Cliente 893688 / 1861050</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>25/09/26 a 01/10/26</td><td>Defeito 893716 / 1857492</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>02/10/26 a 08/10/26</td><td>Defeito Cliente 894000 / 1864078</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>02/10/26 a 08/10/26</td><td>Defeito Cliente 889693 / 1831298</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>02/10/26 a 08/10/26</td><td>Defeito Cliente 894111 / 1855364</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>02/10/26 a 08/10/26</td><td>Defeito Cliente 892228 / 1853417</td><td><span class="badge ok">SIM</span></td></tr>
+<tr><td>02/10/26 a 08/10/26</td><td>Defeito Cliente 894223 / 1865410</td><td><span class="badge ok">SIM</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENTREGAS -->
+  <section class="panel" id="entregas">
+    <div class="card" style="margin-bottom:18px">
+      <div class="head"><div><h2>Evolução diária das entregas</h2>
+        <div class="note">Entregas por data, comparadas à meta fixa de 7 chamados por dia.</div></div>
+        <span class="chip">134 entregues · meta 140</span></div>
+      <div class="chartbox"><canvas id="c_ent_det"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="head"><div><h2>Entregas por data</h2>
+        <div class="note">Comparativo diário de meta, entrega e diferença.</div></div>
+        <span class="chip">20 dias registrados</span></div>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Data</th><th>Meta</th><th>Entregas</th><th>Diferença</th><th>Resultado</th></tr></thead>
+        <tbody>
+<tr><td>11/09/2026</td><td>7</td><td>9</td><td>+2</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>14/09/2026</td><td>7</td><td>8</td><td>+1</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>15/09/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>16/09/2026</td><td>7</td><td>8</td><td>+1</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>17/09/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>18/09/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>21/09/2026</td><td>7</td><td>8</td><td>+1</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>22/09/2026</td><td>7</td><td>2</td><td>-5</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>23/09/2026</td><td>7</td><td>6</td><td>-1</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>24/09/2026</td><td>7</td><td>6</td><td>-1</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>25/09/2026</td><td>7</td><td>12</td><td>+5</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>28/09/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>29/09/2026</td><td>7</td><td>3</td><td>-4</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>30/09/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>01/10/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>02/10/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
+<tr><td>05/10/2026</td><td>7</td><td>10</td><td>+3</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>06/10/2026</td><td>7</td><td>10</td><td>+3</td><td><span class="badge ok">Acima da meta</span></td></tr>
+<tr><td>07/10/2026</td><td>7</td><td>1</td><td>-6</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>08/10/2026</td><td>7</td><td>2</td><td>-5</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <footer>Indicadores calculados diretamente dos registros presentes nas duas abas selecionadas.</footer>
+</div>
+
+<script>
+const D = {"weekly": {"labels": ["21/08 – 27/08", "28/08 – 03/09", "04/09 – 10/09", "11/09 – 17/09", "18/09 – 24/09", "25/09 – 01/10", "02/10 – 08/10"], "counts": [4, 3, 2, 6, 4, 7, 5], "cumulative": [4, 7, 9, 15, 19, 26, 31]}, "daily": {"labels": ["11/09", "14/09", "15/09", "16/09", "17/09", "18/09", "21/09", "22/09", "23/09", "24/09", "25/09", "28/09", "29/09", "30/09", "01/10", "02/10", "05/10", "06/10", "07/10", "08/10"], "meta": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7], "entregas": [9, 8, 7, 8, 7, 7, 8, 2, 6, 6, 12, 7, 3, 7, 7, 7, 10, 10, 1, 2], "metaDia": 7}};
+const charts = {};
+
+/* Paleta do tema */
+const C = {
+  cyan:'#19b5f0', cyanLt:'#5fd6ff', azure:'#1a8cf0', deep:'#1a4a7a',
+  teal:'#1e5c64', bad:'#ff7a90',
+  grid:'rgba(25,181,240,.12)', text:'#7ea9c0'
+};
+
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = C.grid;
+Chart.defaults.font.family = 'Segoe UI, Roboto, Arial, sans-serif';
+Chart.defaults.plugins.legend.labels.color = '#bfe6f7';
+Chart.defaults.plugins.tooltip.backgroundColor = '#06141f';
+Chart.defaults.plugins.tooltip.borderColor = C.cyan;
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = C.cyanLt;
+Chart.defaults.plugins.tooltip.bodyColor = '#d8f3ff';
+
+const eixoY = {beginAtZero:true, ticks:{precision:0}, grid:{color:C.grid}};
+const eixoX = {grid:{color:'rgba(25,181,240,.06)'}};
+
+function cfgN3(rotulo){
+  return {
+    data:{labels:D.weekly.labels,datasets:[
+      {type:'bar',label:rotulo,data:D.weekly.counts,
+       backgroundColor:C.cyan,hoverBackgroundColor:C.cyanLt,borderRadius:3,yAxisID:'y'},
+      {type:'line',label:'Acumulado',data:D.weekly.cumulative,
+       borderColor:C.cyanLt,backgroundColor:C.cyanLt,pointBackgroundColor:'#071a2b',
+       pointBorderColor:C.cyanLt,pointBorderWidth:2,pointRadius:4,tension:.3,yAxisID:'y1'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:eixoX,y:eixoY,
+              y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},ticks:{precision:0}}}}
+  };
+}
+
+function cfgEnt(){
+  const cores = D.daily.entregas.map((v,i)=> v >= D.daily.meta[i] ? C.cyan : C.bad);
+  return {
+    data:{labels:D.daily.labels,datasets:[
+      {type:'bar',label:'Entregas',data:D.daily.entregas,backgroundColor:cores,borderRadius:3},
+      {type:'line',label:'Meta diária · ' + D.daily.metaDia,data:D.daily.meta,
+       borderColor:C.cyanLt,borderDash:[6,4],borderWidth:2,pointRadius:0,tension:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{x:eixoX,y:eixoY}}
+  };
+}
+
+function criar(id,cfg){ charts[id] = new Chart(document.getElementById(id), cfg); }
+criar('c_n3_geral',cfgN3('Chamados no período'));
+criar('c_ent_geral',cfgEnt());
+criar('c_n3_det',cfgN3('Chamados na semana'));
+criar('c_ent_det',cfgEnt());
+
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    Object.values(charts).forEach(c=>c.resize());
+  });
+});
+</script>
+</body>
+</html>
