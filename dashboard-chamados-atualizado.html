@@ -119,7 +119,7 @@
   <div class="eyebrow">Service desk analytics</div>
   <h1>Evolução dos chamados</h1>
   <p class="sub">Acompanhamento de escalonamentos simulados ao N3 e volume de entregas.</p>
-  <div class="meta">Base atualizada · out/2026 &nbsp;|&nbsp; Fonte: planilha de acompanhamento &nbsp;|&nbsp; Gerado em 19/10/2026 18:47</div>
+  <div class="meta">Base atualizada · out/2026 &nbsp;|&nbsp; Fonte: planilha de acompanhamento &nbsp;|&nbsp; Gerado em 21/10/2026 08:20</div>
 
   <div class="tabs">
     <button class="tab active" data-tab="geral">Visão geral</button>
@@ -131,9 +131,9 @@
   <section class="panel active" id="geral">
     <div class="grid kpis">
       <div class="card"><h3>Simulados escalonados ao N3</h3><div class="kpi">38</div><div class="note">38 registros marcados como SIM</div></div>
-      <div class="card"><h3>Chamados entregues</h3><div class="kpi">166</div><div class="note">Total registrado em 25 dias</div></div>
-      <div class="card"><h3>Meta acumulada</h3><div class="kpi">175</div><div class="note">Meta diária de 7 chamados em 25 dias</div></div>
-      <div class="card"><h3>Atingimento acumulado</h3><div class="kpi">94.9%</div><div class="note">Entregas totais ÷ meta total</div></div>
+      <div class="card"><h3>Chamados entregues</h3><div class="kpi">172</div><div class="note">Total registrado em 26 dias</div></div>
+      <div class="card"><h3>Meta acumulada</h3><div class="kpi">178</div><div class="note">Meta diária de 7 chamados em 26 dias</div></div>
+      <div class="card"><h3>Atingimento acumulado</h3><div class="kpi">96.6%</div><div class="note">Entregas totais ÷ meta total</div></div>
       <div class="card"><h3>Média aproximada de defeitos escalonados por semana</h3><div class="kpi">10</div><div class="note">Referência definida na planilha</div></div>
     </div>
 
@@ -147,7 +147,7 @@
       <div class="card">
         <div class="head"><div><h2>Entregas versus meta</h2>
           <div class="note">Quantidade diária entregue e meta de referência</div></div>
-          <span class="chip">11 set – 19 out</span></div>
+          <span class="chip">11 set – 20 out</span></div>
         <div class="chartbox"><canvas id="c_ent_geral"></canvas></div>
       </div>
     </div>
@@ -156,7 +156,7 @@
       <div class="card">
         <div class="head"><h2>Resumo do período</h2><span class="chip">base da planilha</span></div>
         <div class="note" style="margin-bottom:10px">Leitura rápida dos dois conjuntos de dados</div>
-        <p><strong>N3:</strong> foram registrados 38 chamados simulados em 8 intervalos semanais. O maior volume foi de 7 chamados; o período mais recente registrou 7.</p><p><strong>Entregas:</strong> foram contabilizados 166 chamados contra meta acumulada de 175, com saldo de -9. Em <strong>16 dos 25 dias</strong> a meta diária foi atingida ou superada.</p>
+        <p><strong>N3:</strong> foram registrados 38 chamados simulados em 8 intervalos semanais. O maior volume foi de 7 chamados; o período mais recente registrou 7.</p><p><strong>Entregas:</strong> foram contabilizados 172 chamados contra meta acumulada de 178, com saldo de -6. Em <strong>17 dos 26 dias</strong> a meta diária foi atingida ou superada.</p>
       </div>
       <div class="grid" style="grid-template-columns:1fr 1fr">
         <div class="card"><h3>Média por dia de entrega</h3><div class="kpi">6.6</div></div>
@@ -259,14 +259,14 @@
     <div class="card" style="margin-bottom:18px">
       <div class="head"><div><h2>Evolução diária das entregas</h2>
         <div class="note">Entregas por data, comparadas à meta fixa de 7 chamados por dia.</div></div>
-        <span class="chip">166 entregues · meta 175</span></div>
+        <span class="chip">172 entregues · meta 178</span></div>
       <div class="chartbox"><canvas id="c_ent_det"></canvas></div>
     </div>
 
     <div class="card">
       <div class="head"><div><h2>Entregas por data</h2>
         <div class="note">Comparativo diário de meta, entrega e diferença.</div></div>
-        <span class="chip">25 dias registrados</span></div>
+        <span class="chip">26 dias registrados</span></div>
       <div class="scroll">
       <table>
         <thead><tr><th>Data</th><th>Meta</th><th>Entregas</th><th>Diferença</th><th>Resultado</th></tr></thead>
@@ -296,6 +296,7 @@
 <tr><td>15/10/2026</td><td>7</td><td>7</td><td>0</td><td><span class="badge ok">Meta atingida</span></td></tr>
 <tr><td>16/10/2026</td><td>7</td><td>5</td><td>-2</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
 <tr><td>19/10/2026</td><td>7</td><td>5</td><td>-2</td><td><span class="badge bad">Abaixo da meta</span></td></tr>
+<tr><td>20/10/2026</td><td>3</td><td>6</td><td>+3</td><td><span class="badge ok">Acima da meta</span></td></tr>
         </tbody>
       </table>
       </div>
@@ -306,7 +307,7 @@
 </div>
 
 <script>
-const D = {"weekly": {"labels": ["21/08 – 27/08", "28/08 – 03/09", "04/09 – 10/09", "11/09 – 17/09", "18/09 – 24/09", "25/09 – 01/10", "02/10 – 08/10", "09/10 – 15/10"], "counts": [4, 3, 2, 6, 4, 7, 5, 7], "cumulative": [4, 7, 9, 15, 19, 26, 31, 38]}, "daily": {"labels": ["11/09", "14/09", "15/09", "16/09", "17/09", "18/09", "21/09", "22/09", "23/09", "24/09", "25/09", "28/09", "29/09", "30/09", "01/10", "02/10", "05/10", "06/10", "07/10", "08/10", "13/10", "14/10", "15/10", "16/10", "19/10"], "meta": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7], "entregas": [9, 8, 7, 8, 7, 7, 8, 2, 6, 6, 12, 7, 3, 7, 7, 7, 10, 10, 1, 4, 5, 8, 7, 5, 5], "metaDia": 7}};
+const D = {"weekly": {"labels": ["21/08 – 27/08", "28/08 – 03/09", "04/09 – 10/09", "11/09 – 17/09", "18/09 – 24/09", "25/09 – 01/10", "02/10 – 08/10", "09/10 – 15/10"], "counts": [4, 3, 2, 6, 4, 7, 5, 7], "cumulative": [4, 7, 9, 15, 19, 26, 31, 38]}, "daily": {"labels": ["11/09", "14/09", "15/09", "16/09", "17/09", "18/09", "21/09", "22/09", "23/09", "24/09", "25/09", "28/09", "29/09", "30/09", "01/10", "02/10", "05/10", "06/10", "07/10", "08/10", "13/10", "14/10", "15/10", "16/10", "19/10", "20/10"], "meta": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3], "entregas": [9, 8, 7, 8, 7, 7, 8, 2, 6, 6, 12, 7, 3, 7, 7, 7, 10, 10, 1, 4, 5, 8, 7, 5, 5, 6], "metaDia": 7}};
 const charts = {};
 
 /* Paleta do tema */
