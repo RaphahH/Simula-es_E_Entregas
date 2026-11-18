@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visão geral da sprint</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#071a2b; --bg2:#0a2236; --card:#0b2a3f; --ink:#d8f3ff; --muted:#7ea9c0;
+    --line:#14506b; --cyan:#19b5f0; --cyan-lt:#5fd6ff; --azure:#1a8cf0; --deep:#1a4a7a;
+    --glow:0 0 14px rgba(25,181,240,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;color:var(--ink);font-family:"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(26,140,240,.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(30,92,100,.30), transparent 60%),
+      linear-gradient(rgba(25,181,240,.045) 1px, transparent 1px) 0 0/34px 34px,
+      linear-gradient(90deg, rgba(25,181,240,.045) 1px, transparent 1px) 0 0/34px 34px,
+      var(--bg);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+  .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-weight:600;text-shadow:var(--glow)}
+  h1{margin:4px 0 6px;font-size:30px;color:#eaf9ff;text-shadow:0 0 18px rgba(25,181,240,.35)}
+  .sub{color:var(--muted);margin:0 0 10px}
+  .meta{font-size:13px;color:var(--muted);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-bottom:18px}
+  .two{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));margin-bottom:18px}
+  .card{
+    position:relative;background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+    box-shadow:0 6px 24px rgba(0,0,0,.28), inset 0 0 0 1px rgba(25,181,240,.04);
+  }
+  .card::before,.card::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none}
+  .card::before{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);border-top-left-radius:10px}
+  .card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);border-bottom-right-radius:10px}
+  .card h3{margin:0 0 4px;font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .kpi{font-size:36px;font-weight:700;margin:6px 0 2px;color:var(--cyan-lt);text-shadow:0 0 16px rgba(25,181,240,.35)}
+  .note{font-size:12.5px;color:var(--muted)}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .head h2{margin:0;font-size:18px;color:#eaf9ff}
+  .chip{font-size:12px;background:rgba(25,181,240,.12);color:var(--cyan-lt);border:1px solid rgba(25,181,240,.45);padding:3px 11px;border-radius:4px;letter-spacing:.03em;white-space:nowrap;text-transform:uppercase}
+  .chartbox{position:relative;height:300px;margin-top:14px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .stat{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:rgba(7,26,43,.6)}
+  .stat .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .stat strong{display:block;font-size:24px;color:var(--cyan-lt);margin-top:2px}
+  .stats.dois{grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px}
+  .stats.dois .stat{padding:18px 20px;border-radius:10px}
+  .stats.dois .lbl{font-size:15px;letter-spacing:0;text-transform:none}
+  .stats.dois strong{font-size:32px;margin-top:8px}
+  .big{font-size:56px;font-weight:700;color:var(--cyan-lt);text-shadow:0 0 18px rgba(25,181,240,.4);line-height:1.1;margin-top:10px}
+  .big small{font-size:16px;color:var(--muted);font-weight:500;margin-left:8px}
+  .bar{height:14px;margin-top:16px;border:1px solid var(--line);border-radius:999px;background:#061522;overflow:hidden}
+  .bar > div{height:100%;width:65.00%;min-width:2px;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--cyan-lt));box-shadow:var(--glow)}
+  .days{display:grid;gap:8px;margin-top:14px}
+  .day{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(7,26,43,.6)}
+  .day-name{font-weight:600}
+  .day-val{color:var(--cyan-lt);font-weight:700;font-size:17px}
+  .day-acc{color:var(--muted);font-size:12.5px;min-width:110px;text-align:right}
+  .ritmo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+  .ritmo .tend{color:var(--cyan-lt);font-weight:700}
+  .foot-note{font-size:12px;color:var(--muted);margin-top:10px}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:5px 15px;border-radius:999px;border:2px solid currentColor;background:rgba(7,20,34,.55);font-weight:700;font-size:13.5px;white-space:nowrap;line-height:1.2}
+  .pill .ico{font-size:15px;line-height:1}
+  .pill.lg{padding:9px 22px;font-size:15px;gap:10px;cursor:default}
+  .pill.lg .ico{font-size:19px}
+  .pill.red{color:#f0654a}.pill.green{color:#4fd1a1}.pill.gold{color:#f5b72e}.pill.blue{color:#14b8f0}.pill.pink{color:#e0306f}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  th,td{padding:9px 10px;border-bottom:1px solid rgba(20,80,107,.6);text-align:left}
+  th{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--cyan);background:rgba(25,181,240,.06)}
+  tbody tr:hover{background:rgba(25,181,240,.07)}
+  footer{margin-top:28px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Service desk analytics</div>
+  <h1>Visão geral da sprint</h1>
+  <p class="sub">Acompanhamento de entregas e meta semanal.</p>
+  <div class="meta">Sprint atual · Sexta a quinta &nbsp;|&nbsp; Fonte: BurndownSemanal-N2.xls &nbsp;|&nbsp; Gerado em 18/11/2026 11:49</div>
+
+  <div class="grid kpis">
+    <div class="card"><h3>Escopo planejado</h3><div class="kpi">20</div><div class="note">chamados na sprint · meta de 4 por dia</div></div>
+    <div class="card"><h3>Entregas concluídas</h3><div class="kpi">13</div><div class="note">65% do escopo concluído</div></div>
+    <div class="card"><h3>Restantes</h3><div class="kpi">7</div><div class="note">chamados restantes</div></div>
+    <div class="card"><h3>Ritmo vs. meta</h3><div class="kpi">+1</div><div class="note">chamados acima da meta acumulada</div></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <div class="head"><div><h2>Entregas versus meta</h2>
+        <div class="note">Entregas de cada dia · meta de 4 por dia</div></div>
+        <span class="chip">Meta 4/dia · 20/semana &nbsp; <b>13 / 20</b></span></div>
+      <div class="stats">
+        <div class="stat"><div class="lbl">Planejados</div><strong>20</strong></div>
+        <div class="stat"><div class="lbl">Concluídos</div><strong>13</strong></div>
+        <div class="stat"><div class="lbl">Restantes</div><strong>7</strong></div>
+      </div>
+      <div class="chartbox"><canvas id="c_burn"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="head">
+        <div><h2>Atingimento da meta</h2>
+          <div class="note">Progresso sobre o escopo planejado</div></div>
+        <span class="pill lg gold" title="13 entregues de 12 esperados até aqui (108% da meta acumulada)"><span class="ico">🌟</span>muito bom</span>
+      </div>
+      <div class="big">65%<small>concluído</small></div>
+      <div style="margin-top:14px"><strong style="color:#eaf9ff">Progresso da meta</strong></div>
+      <div class="note">13 de 20 chamados concluídos até terça-feira.</div>
+      <div class="bar"><div></div></div>
+      <div class="stats dois">
+        <div class="stat"><div class="lbl">Planejados</div><strong>20</strong></div>
+        <div class="stat"><div class="lbl">Concluídos</div><strong>13</strong></div>
+        <div class="stat"><div class="lbl">Restantes</div><strong>7</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <div class="head"><div><h2>Crescimento das entregas</h2>
+        <div class="note">Entregas acumuladas por dia · meta de 4 por dia</div></div>
+        <span class="chip">Meta 4/dia · 20/semana &nbsp; <b>13 / 20</b></span></div>
+      <div class="chartbox"><canvas id="c_ent"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="head"><div><h2>Entregas por dia</h2>
+        <div class="note">Chamados concluídos · acumulado</div></div></div>
+      <div class="days">
+<div class="day"><div><span class="day-name">Sexta</span></div><div class="day-val">+2</div><div class="day-acc">2 acumulado</div></div>
+<div class="day"><div><span class="day-name">Segunda</span></div><div class="day-val">+6</div><div class="day-acc">8 acumulado</div></div>
+<div class="day"><div><span class="day-name">Terça</span></div><div class="day-val">+5</div><div class="day-acc">13 acumulado</div></div>
+      </div>
+      <div class="ritmo"><span class="pill pink"><span class="ico">🚀</span>Acima do ritmo ideal</span> <span class="tend">↓ desaceleração</span></div>
+      <div class="foot-note">* Comparação com a meta acumulada até terça-feira, considerando 3 de 5 dias registrados.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><div><h2>Dados do dashboard da sprint</h2></div></div>
+    <table>
+      <thead><tr><th>Etapa</th><th>Entregas do dia</th><th>Entregas acumuladas</th><th>Restantes</th></tr></thead>
+      <tbody>
+<tr><td>Sexta</td><td>2</td><td>2</td><td>18</td></tr>
+<tr><td>Segunda</td><td>6</td><td>8</td><td>12</td></tr>
+<tr><td>Terça</td><td>5</td><td>13</td><td>7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>Indicadores calculados diretamente dos dados da planilha XLS.</footer>
+</div>
+
+<script>
+const D = {"labels": ["Início", "Sex", "Seg", "Ter", "Qua", "Qui"], "restante": [20.0, 18.0, 12.0, 7.0, null, null], "idealRestante": [20.0, 16.0, 12.0, 8.0, 4.0, 0.0], "labelsDia": ["Sex", "Seg", "Ter", "Qua", "Qui"], "entregasDia": [2.0, 6.0, 5.0, null, null], "metaDia": [4.0, 4.0, 4.0, 4.0, 4.0], "metaLabel": "Meta diária (4)"};
+const C = {cyan:'#19b5f0', cyanLt:'#5fd6ff', grid:'rgba(25,181,240,.12)', text:'#7ea9c0'};
+
+Chart.defaults.color = C.text;
+Chart.defaults.borderColor = C.grid;
+Chart.defaults.font.family = 'Segoe UI, Roboto, Arial, sans-serif';
+Chart.defaults.plugins.legend.labels.color = '#bfe6f7';
+Chart.defaults.plugins.tooltip.backgroundColor = '#06141f';
+Chart.defaults.plugins.tooltip.borderColor = C.cyan;
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = C.cyanLt;
+Chart.defaults.plugins.tooltip.bodyColor = '#d8f3ff';
+
+const eixoX = {grid:{color:'rgba(25,181,240,.06)'}};
+const eixoY = {beginAtZero:true, ticks:{precision:0}, grid:{color:C.grid}};
+
+new Chart(document.getElementById('c_burn'), {
+  data:{labels:D.labels, datasets:[
+    {type:'line', label:'Realizado', data:D.restante, borderColor:C.cyan,
+     backgroundColor:'rgba(25,181,240,.15)', fill:true, tension:.28, pointRadius:4,
+     pointBackgroundColor:C.cyanLt, pointBorderColor:'#071a2b', pointBorderWidth:2,
+     spanGaps:false},
+    {type:'line', label:'Ritmo ideal', data:D.idealRestante, borderColor:C.cyanLt,
+     borderDash:[7,5], pointRadius:0, tension:0}
+  ]},
+  options:{responsive:true, maintainAspectRatio:false, scales:{x:eixoX, y:eixoY}}
+});
+
+new Chart(document.getElementById('c_ent'), {
+  data:{labels:D.labelsDia, datasets:[
+    {type:'bar', label:'Entregas do dia', data:D.entregasDia, backgroundColor:C.cyan,
+     hoverBackgroundColor:C.cyanLt, borderRadius:3},
+    {type:'line', label:D.metaLabel, data:D.metaDia, borderColor:C.cyanLt,
+     borderDash:[7,5], borderWidth:2, pointRadius:3, pointBackgroundColor:C.cyanLt,
+     pointBorderColor:'#071a2b', tension:0}
+  ]},
+  options:{responsive:true, maintainAspectRatio:false, scales:{x:eixoX, y:eixoY}}
+});
+</script>
+</body>
+</html>
